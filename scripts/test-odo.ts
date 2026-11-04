@@ -1,0 +1,11 @@
+import fs from 'fs';import Papa from 'papaparse';
+import {build} from '../src/engine/build';import {autoMap} from '../src/engine/fields';import {DEFAULT_CONFIG} from '../src/engine/types';
+import {auditOdometer,DEFAULT_ODO} from '../src/engine/odometer';
+const p=Papa.parse<Record<string,string>>(fs.readFileSync(process.argv[2],'utf8'),{header:true,skipEmptyLines:true});
+const h=p.meta.fields!;const ds=build(p.data,autoMap(h),DEFAULT_CONFIG,'t',h);
+const rows=auditOdometer(ds.masters,ds.history,DEFAULT_ODO);
+const c:Record<string,number>={};for(const r of rows)c[r.status]=(c[r.status]||0)+1;console.log(rows.length,'vehicle-trips',c);
+const odo=ds.masters.filter(m=>m.status==='Completed'&&m.odoKm!==undefined&&m.odoKm>=0).map(m=>m.odoKm!).sort((a,b)=>b-a);
+console.log('top odoKm',odo.slice(0,8),'median',odo[Math.floor(odo.length/2)],'>300:',odo.filter(x=>x>300).length,'sum excl >300:',odo.filter(x=>x<=300).reduce((a,b)=>a+b,0));
+const cont=rows.filter(r=>r.contDiff!==undefined);console.log('continuity pairs',cont.length,'neg',cont.filter(r=>r.contDiff!<0).length,'>20',cont.filter(r=>r.contDiff!>20).length,'zero',cont.filter(r=>r.contDiff===0).length);
+console.log('overlaps',rows.filter(r=>r.reasons.some(x=>x.startsWith('Overlaps'))).length);
