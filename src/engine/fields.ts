@@ -2,6 +2,8 @@ import {FieldDef} from './types';
 export const FIELDS:FieldDef[]=[
 {key:'taskId',label:'Task ID',aliases:['task_id','taskid']},
 {key:'orderId',label:'Order ID',aliases:['order_id'],note:'Requires PTrack Confirmation (location?)'},
+{key:'pickupAddr',label:'Pickup Address',aliases:['pickup_address'],note:'Requires PTrack Confirmation (direction depends on PICKUPDROP)'},
+{key:'dropAddr',label:'Customer Address',aliases:['customer_address'],note:'Requires PTrack Confirmation (direction depends on PICKUPDROP)'},
 {key:'company',label:'Company',aliases:['team_name'],note:'Requires PTrack Confirmation'},
 {key:'vehicle',label:'Vehicle Number',aliases:['vehicle_number']},
 {key:'driver',label:'Driver (Agent username)',aliases:['agent_username'],note:'Requires PTrack Confirmation'},

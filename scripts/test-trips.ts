@@ -1,0 +1,10 @@
+import fs from 'fs';import Papa from 'papaparse';
+import {build} from '../src/engine/build';import {autoMap} from '../src/engine/fields';import {DEFAULT_CONFIG} from '../src/engine/types';import {tripFacts} from '../src/engine/trips';
+const p=Papa.parse<Record<string,string>>(fs.readFileSync(process.argv[2],'utf8'),{header:true,skipEmptyLines:true});
+const h=p.meta.fields!;const ds=build(p.data,autoMap(h),DEFAULT_CONFIG,'t',h);
+const t=tripFacts(ds);const d=t.facts.filter(f=>f.durMin!==undefined).map(f=>f.durMin!).sort((a,b)=>a-b);
+console.log('issues',ds.issues.length,'tasks w/ addr',ds.masters.filter(m=>m.pickupAddr).length,ds.masters.filter(m=>m.dropAddr).length);
+console.log('noStart',t.noStart,'noSuccess',t.noSuccess,'badSeq',t.badSeq,'durations',d.length,'median',d[d.length>>1],'p95',d[Math.floor(d.length*.95)],'max',d[d.length-1],'neg-free');
+const c=(f:(m:any)=>string|undefined)=>{const o:Record<string,number>={};for(const m of ds.masters){const k=f(m)??'(missing)';o[k]=(o[k]||0)+1}return Object.entries(o).sort((a,b)=>b[1]-a[1]).slice(0,6)};
+console.log('tripType',c(m=>m.tripType),'\nshift',c(m=>m.shift),'\npickupDrop',c(m=>m.pickupDrop),'\npickupCat',c(m=>m.pickupCat));
+console.log('dates',[...new Set(ds.masters.map(m=>m.date))].sort());

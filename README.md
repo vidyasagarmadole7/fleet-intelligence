@@ -2,7 +2,7 @@
 Run: `npm install && npm run dev`. Verify engine on a CSV: `npm test -- path/to/task.csv`.
 ## Architecture
 - `src/engine/` pure TypeScript, no UI: `fields.ts` (CSV mapping), `build.ts` (Task Master vs Task History split, timestamp parsing, validation), `kpis.ts` (every KPI with formula, sources, included/excluded). An API adapter can return the same `Row[]` and call `build()` unchanged.
-- `src/pages/` Import and Executive Overview. Module 1 and Module 7 (Odometer & KM Audit) are built. Others are routed but not built.
+- `src/pages/` Import and Executive Overview. Modules 1 (Overview), 2 (Trip Analytics) and 7 (Odometer & KM Audit) are built. Others are routed but not built.
 ## Rules implemented
 - Trips = COUNT(DISTINCT Task_ID); history rows kept separately; distance/employees/odometer read once per task.
 - Master values come from the latest history row; conflicts across rows are flagged. Blank and "-" are missing, never zero.

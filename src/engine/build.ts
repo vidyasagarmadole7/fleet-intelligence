@@ -32,7 +32,8 @@ export function build(rows:Row[],map:Record<string,string>,cfg:Config,fileName:s
   const distM=n('distM'),distanceKm=distM===undefined?undefined:distM/1000;
   const startOdo=n('startOdo'),endOdo=n('endOdo');
   const odoKm=startOdo!==undefined&&endOdo!==undefined?endOdo-startOdo:undefined;
-  const m:Master={taskId:id,orderId:pick('orderId'),company:pick('company'),vehicle:pick('vehicle'),driver:pick('driver'),agentId:pick('agentId'),
+  const first=(k:string)=>rs.map(r=>g(r,k)).find(Boolean);
+  const m:Master={taskId:id,orderId:pick('orderId'),pickupAddr:first('pickupAddr'),dropAddr:first('dropAddr'),company:pick('company'),vehicle:pick('vehicle'),driver:pick('driver'),agentId:pick('agentId'),
    vendor:pick('vendor'),distanceKm,pickupCat:pick('pickupCat'),status,pickupDrop:pick('pickupDrop'),shift:pick('shift'),tripType:pick('tripType'),
    planned:n('planned'),actual:n('actual'),inCab:n('inCab'),startOdo,endOdo,odoKm,scheduledMs:sched?.ms,date:(sched??comp)?.date,completedMs:comp?.ms,rowCount:rs.length,issues:iss};
   const done=status==='Completed',assigned=status!=='Unassigned';

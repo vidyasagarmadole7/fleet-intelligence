@@ -1,7 +1,7 @@
 import {useState} from 'react';import {NavLink,Route,Routes,Navigate} from 'react-router-dom';
 import {LayoutDashboard,Route as RouteI,Building2,Car,User,Users,Gauge,ShieldCheck,Upload} from 'lucide-react';
-import {DEFAULT_CONFIG,Dataset} from './engine/types';import Overview from './pages/Overview';import Import from './pages/Import';import Odometer from './pages/Odometer';
-const MODS=[['Executive Overview','/',LayoutDashboard,true],['Trip Analytics','/m/trips',RouteI,false],['Company / Location Performance','/m/company',Building2,false],['Vehicle Performance','/m/vehicle',Car,false],['Driver Performance','/m/driver',User,false],['Employee & Occupancy','/m/occupancy',Users,false],['Odometer & KM Audit','/m/odometer',Gauge,true],['Employee Activity & Vendor Audit','/m/activity',ShieldCheck,false]] as const;
+import {DEFAULT_CONFIG,Dataset} from './engine/types';import Overview from './pages/Overview';import Import from './pages/Import';import Odometer from './pages/Odometer';import Trips from './pages/Trips';
+const MODS=[['Executive Overview','/',LayoutDashboard,true],['Trip Analytics','/m/trips',RouteI,true],['Company / Location Performance','/m/company',Building2,false],['Vehicle Performance','/m/vehicle',Car,false],['Driver Performance','/m/driver',User,false],['Employee & Occupancy','/m/occupancy',Users,false],['Odometer & KM Audit','/m/odometer',Gauge,true],['Employee Activity & Vendor Audit','/m/activity',ShieldCheck,false]] as const;
 export default function App(){
  const [ds,setDs]=useState<Dataset|null>(null);const [cfg,setCfg]=useState(DEFAULT_CONFIG);
  const empty=<div className="bg-white border rounded-xl p-10 text-center"><div className="text-lg font-medium">No data imported</div><p className="text-slate-500 text-sm my-2">Import a PTrack CSV export to begin. No demo or fake data is generated.</p><NavLink to="/import" className="text-blue-600">Go to Data Import</NavLink></div>;
@@ -12,6 +12,7 @@ export default function App(){
   <main className="flex-1 p-6 min-w-0"><Routes>
    <Route path="/" element={ds?<Overview ds={ds} cfg={cfg} setCfg={setCfg}/>:empty}/>
    <Route path="/import" element={<Import cfg={cfg} ds={ds} onDone={setDs}/>}/>
+   <Route path="/m/trips" element={ds?<Trips ds={ds}/>:empty}/>
    <Route path="/m/odometer" element={ds?<Odometer ds={ds}/>:empty}/>
    <Route path="/m/:slug" element={<div className="bg-white border rounded-xl p-10 text-center"><div className="text-lg font-medium">Module not built yet</div><p className="text-sm text-slate-500">This module is next in the build plan. It will reuse the same Task Master and validation engine.</p></div>}/>
    <Route path="*" element={<Navigate to="/"/>}/></Routes></main></div>}
