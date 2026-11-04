@@ -1,7 +1,7 @@
 import {useState} from 'react';import {NavLink,Route,Routes,Navigate} from 'react-router-dom';
 import {LayoutDashboard,Route as RouteI,Building2,Car,User,Users,Gauge,ShieldCheck,Upload} from 'lucide-react';
-import {DEFAULT_CONFIG,Dataset} from './engine/types';import Overview from './pages/Overview';import Import from './pages/Import';import Odometer from './pages/Odometer';import Trips from './pages/Trips';import Activity from './pages/Activity';
-const MODS=[['Executive Overview','/',LayoutDashboard,true],['Trip Analytics','/m/trips',RouteI,true],['Company / Location Performance','/m/company',Building2,false],['Vehicle Performance','/m/vehicle',Car,false],['Driver Performance','/m/driver',User,false],['Employee & Occupancy','/m/occupancy',Users,false],['Odometer & KM Audit','/m/odometer',Gauge,true],['Employee Activity & Vendor Audit','/m/activity',ShieldCheck,true]] as const;
+import {DEFAULT_CONFIG,Dataset} from './engine/types';import Overview from './pages/Overview';import Import from './pages/Import';import Odometer from './pages/Odometer';import Trips from './pages/Trips';import Activity from './pages/Activity';import Company from './pages/Company';import Vehicles from './pages/Vehicles';import Drivers from './pages/Drivers';import Occupancy from './pages/Occupancy';
+const MODS=[['Executive Overview','/',LayoutDashboard,true],['Trip Analytics','/m/trips',RouteI,true],['Company / Location Performance','/m/company',Building2,true],['Vehicle Performance','/m/vehicle',Car,true],['Driver Performance','/m/driver',User,true],['Employee & Occupancy','/m/occupancy',Users,true],['Odometer & KM Audit','/m/odometer',Gauge,true],['Employee Activity & Vendor Audit','/m/activity',ShieldCheck,true]] as const;
 export default function App(){
  const [ds,setDs]=useState<Dataset|null>(null);const [cfg,setCfg]=useState(DEFAULT_CONFIG);
  const empty=<div className="bg-white border rounded-xl p-10 text-center"><div className="text-lg font-medium">No data imported</div><p className="text-slate-500 text-sm my-2">Import a PTrack CSV export to begin. No demo or fake data is generated.</p><NavLink to="/import" className="text-blue-600">Go to Data Import</NavLink></div>;
@@ -14,6 +14,10 @@ export default function App(){
    <Route path="/import" element={<Import cfg={cfg} ds={ds} onDone={setDs}/>}/>
    <Route path="/m/trips" element={ds?<Trips ds={ds}/>:empty}/>
    <Route path="/m/activity" element={ds?<Activity ds={ds}/>:empty}/>
+   <Route path="/m/company" element={ds?<Company ds={ds} cfg={cfg}/>:empty}/>
+   <Route path="/m/vehicle" element={ds?<Vehicles ds={ds}/>:empty}/>
+   <Route path="/m/driver" element={ds?<Drivers ds={ds}/>:empty}/>
+   <Route path="/m/occupancy" element={ds?<Occupancy ds={ds} cfg={cfg}/>:empty}/>
    <Route path="/m/odometer" element={ds?<Odometer ds={ds}/>:empty}/>
    <Route path="/m/:slug" element={<div className="bg-white border rounded-xl p-10 text-center"><div className="text-lg font-medium">Module not built yet</div><p className="text-sm text-slate-500">This module is next in the build plan. It will reuse the same Task Master and validation engine.</p></div>}/>
    <Route path="*" element={<Navigate to="/"/>}/></Routes></main></div>}
