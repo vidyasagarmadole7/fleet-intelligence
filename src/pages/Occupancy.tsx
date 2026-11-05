@@ -34,6 +34,7 @@ export default function Occupancy({ds,cfg}:{ds:Dataset;cfg:Config}){
  const day=useMemo(()=>trend(d=>d),[ms]),month=useMemo(()=>trend(monthOf),[ms]);
  const shift=useMemo(()=>{const c=new Map<string,number>();for(const m of ms){if(!m.shift||m[cfg.employeeField]===undefined)continue;c.set(m.shift,(c.get(m.shift)||0)+(m[cfg.employeeField] as number))}return[...c].sort((a,b)=>b[1]-a[1]).slice(0,15) as D},[ms,cfg]);
  const varDist=useMemo(()=>{const B=['<= -3','-2','-1','0','+1','+2','>= +3'];const n=B.map(()=>0);for(const r of rows){if(r.variance===undefined)continue;const v=r.variance;n[v<=-3?0:v>=3?6:v+3]++}return{B,n}},[rows]);
+ const actOne=useMemo(()=>{const a=ms.map(m=>m.actual).filter((x):x is number=>x!==undefined);return a.length>=20?a.filter(x=>x===1).length/a.length*100:0},[ms]);
  const cov=[['Planned_Emp',ms.filter(m=>m.planned!==undefined).length],['Actual_Emp',ms.filter(m=>m.actual!==undefined).length],['In Cab Employees',ms.filter(m=>m.inCab!==undefined).length]] as [string,number][];
 
  const cols:Col<OccRow>[]=[
@@ -49,6 +50,7 @@ export default function Occupancy({ds,cfg}:{ds:Dataset;cfg:Config}){
   <Header title="Employee & Occupancy Analytics" ds={ds} shown={ms.length} total={ds.masters.length}/>
   {bar}
   <Notice tone="slate">Planned_Emp, Actual_Emp and In Cab Employees are kept as three separate fields. Blank is never treated as 0. Occupancy % and under/over-utilization are <b>not calculated</b>: the export has no vehicle seating-capacity field. Each task is counted once (not once per history row).</Notice>
+  {actOne>=80&&<Notice>Data check: Actual_Emp is 1 on {actOne.toFixed(0)}% of these trips, so it looks like a default rather than a real boarding count. Planned vs Actual variance and mismatch counts are therefore unreliable. "Employees Transported" elsewhere defaults to In Cab Employees; change it in Settings (Executive Overview) if PTrack says otherwise.</Notice>}
   <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">{kpis.map(k=><Tile key={k.id} k={k} onOpen={setOpen}/>)}</div>
   {ms.length===0?<Empty text="No trips match the filters."/>:<>
   <div className="grid lg:grid-cols-2 gap-4">

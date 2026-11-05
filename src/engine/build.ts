@@ -1,4 +1,6 @@
 import {Config,Dataset,Hist,Issue,Master,Row} from './types';
+/** In Cab Employees is normally a number; if an export lists names ("A, B") the distinct names are counted. */
+const empCount=(v?:string)=>{const c=clean(v);if(c===undefined)return;if(/^\d+$/.test(c))return Number(c);const n=new Set(c.split(/[,;]/).map(x=>x.trim().toLowerCase()).filter(Boolean)).size;return n||undefined};
 const clean=(v?:string)=>{const t=v?.trim();return !t||t==='-'?undefined:t};
 const num=(v?:string)=>{const c=clean(v);if(c===undefined)return;const n=Number(c.replace(/,/g,''));return Number.isFinite(n)?n:undefined};
 const MON=['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
@@ -35,7 +37,7 @@ export function build(rows:Row[],map:Record<string,string>,cfg:Config,fileName:s
   const first=(k:string)=>rs.map(r=>g(r,k)).find(Boolean);
   const m:Master={taskId:id,orderId:pick('orderId'),pickupAddr:first('pickupAddr'),dropAddr:first('dropAddr'),company:pick('company'),vehicle:pick('vehicle'),driver:pick('driver'),agentId:pick('agentId'),
    vendor:pick('vendor'),distanceKm,pickupCat:pick('pickupCat'),status,pickupDrop:pick('pickupDrop'),shift:pick('shift'),tripType:pick('tripType'),
-   planned:n('planned'),actual:n('actual'),inCab:n('inCab'),startOdo,endOdo,odoKm,scheduledMs:sched?.ms,date:(sched??comp)?.date,completedMs:comp?.ms,rowCount:rs.length,issues:iss};
+   planned:n('planned'),actual:n('actual'),inCab:empCount(pick('inCab')),startImg:first('startImg'),endImg:first('endImg'),lat:n('lat'),lng:n('lng'),totalMin:n('totalMin'),startOdo,endOdo,odoKm,scheduledMs:sched?.ms,date:(sched??comp)?.date,completedMs:comp?.ms,rowCount:rs.length,issues:iss};
   const done=status==='Completed',assigned=status!=='Unassigned';
   if(!status)add('MISSING_STATUS','critical','Task status missing');
   else if(!cfg.validStatuses.includes(status))add('INVALID_STATUS','warn',`Unrecognised status "${status}"`);

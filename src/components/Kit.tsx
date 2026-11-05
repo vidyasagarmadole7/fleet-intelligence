@@ -30,7 +30,7 @@ export function Header({title,ds,shown,total,unit='tasks'}:{title:string;ds:{fil
 export type D=[string,number][];
 export const hbar=(d:D)=>({tooltip:{trigger:'axis'},grid:{left:120,right:20,top:10,bottom:20},yAxis:{type:'category',data:[...d].reverse().map(x=>x[0]),axisLabel:{width:110,overflow:'truncate'}},xAxis:{type:'value'},series:[{type:'bar',data:[...d].reverse().map(x=>Math.round(x[1]*100)/100)}]}) as any;
 export const pie=(d:D)=>({tooltip:{trigger:'item'},series:[{type:'pie',radius:['45%','70%'],data:d.map(x=>({name:x[0],value:x[1]}))}]}) as any;
-export const stackedH=(cats:string[],series:{name:string;data:number[]}[])=>({tooltip:{trigger:'axis'},legend:{top:0},grid:{left:120,right:20,top:30,bottom:20},yAxis:{type:'category',data:[...cats].reverse(),axisLabel:{width:110,overflow:'truncate'}},xAxis:{type:'value'},
+export const stackedH=(cats:string[],series:{name:string;data:number[]}[])=>({tooltip:{trigger:'axis'},legend:{top:0,type:'scroll'},grid:{left:120,right:20,top:36,bottom:20},yAxis:{type:'category',data:[...cats].reverse(),axisLabel:{width:110,overflow:'truncate'}},xAxis:{type:'value'},
  series:series.map(s=>({name:s.name,type:'bar',stack:'t',data:[...s.data].reverse()}))}) as any;
 
 /* ---------- data table: search, sort, pagination, CSV export ---------- */
@@ -64,3 +64,9 @@ export function TripsDrawer({title,sub,ms,onClose}:{title:string;sub?:string;ms:
   <div className="bg-white w-full max-w-5xl h-full overflow-auto p-6" onClick={e=>e.stopPropagation()}>
    <div className="flex justify-between mb-3"><div><div className="text-xs text-slate-400">Trip history (unique Task IDs)</div><h2 className="text-xl font-semibold">{title}</h2>{sub&&<div className="text-sm text-slate-500">{sub}</div>}</div><button onClick={onClose}><X/></button></div>
    <DataTable title="Trips" rows={ms} cols={cols} pageSize={15} exportName={`${title.replace(/\W+/g,'_')}_trips.csv`} defaultSort={['d',-1]} search={m=>[m.taskId,m.company,m.vehicle,m.driver,m.vendor,m.status].join(' ')}/></div></div>}
+
+/* generic right-side drawer */
+export function Drawer({title,sub,onClose,children}:{title:string;sub?:string;onClose:()=>void;children:ReactNode}){
+ return <div className="fixed inset-0 bg-slate-900/50 z-50 flex justify-end" onClick={onClose}>
+  <div className="bg-white w-full max-w-5xl h-full overflow-auto p-6" onClick={e=>e.stopPropagation()}>
+   <div className="flex justify-between mb-3"><div><h2 className="text-xl font-semibold">{title}</h2>{sub&&<div className="text-sm text-slate-500">{sub}</div>}</div><button onClick={onClose}><X/></button></div>{children}</div></div>}

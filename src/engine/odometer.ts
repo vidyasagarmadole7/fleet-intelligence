@@ -1,8 +1,8 @@
 import {Hist,Master} from './types';
 export type OdoStatus='Normal'|'Warning'|'Critical'|'Needs Review'|'Insufficient Data';
 export interface OdoThresholds{gapKm:number;contKm:number;maxTripKm:number}
-/** Placeholder defaults: all Require PTrack Confirmation. */
-export const DEFAULT_ODO:OdoThresholds={gapKm:10,contKm:20,maxTripKm:300};
+/** Defaults copied from the v11 audit dashboard (tolerance 5 km, plausible trip max 300 km). Still Require PTrack Confirmation. */
+export const DEFAULT_ODO:OdoThresholds={gapKm:5,contKm:5,maxTripKm:300};
 export interface OdoRow{m:Master;startedMs?:number;prev?:Master;contDiff?:number;gap?:number;status:OdoStatus;reasons:string[]}
 const RANK:Record<OdoStatus,number>={'Critical':4,'Needs Review':3,'Warning':2,'Insufficient Data':1,'Normal':0};
 export function auditOdometer(ms:Master[],hist:Hist[],t:OdoThresholds):OdoRow[]{

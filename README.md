@@ -15,3 +15,11 @@ Exception Management screen, exports beyond CSV, API service interfaces, sync UI
 
 ## Added requiring PTrack confirmation (modules 3-6)
 Order_ID / address as 'location' (selectable); Agent_Username as driver; odometer compliance = both readings present and end >= start; avg trip duration = Started at to Successful at; Vehicle/Driver 'Requiring Review' = any warning/critical issue on their tasks; occupancy % and over/under-utilization NOT computed (no capacity field).
+
+## Added from the v11 audit dashboard (Employee Activity tabs + accuracy)
+- Employee Activity & Vendor Audit now has: A Employee Activity, B Team Upload, C Location Performance, D Vendor Analytics (`pages/TeamUpload.tsx`, `pages/LocationPerformance.tsx`; engines `engine/teamupload.ts`, `engine/locperf.ts`).
+- Exception Management (`/exceptions`, `engine/exceptions.ts`): rule-based findings (missing / reused / identical odometer images, repeated start reading, missing start or success event, modified after completion, suspicious duration, invalid GPS, missing driver/vehicle, odometer audit). Review status is saved in the browser only; export to keep it.
+- Parser now also reads `Status updated from X to Y by NAME` and `Successful at NAME`; exact duplicate history rows are counted once.
+- Defaults aligned to v11: odometer vs PTrack tolerance 5 km, plausible trip 300 km. Employees travelled defaults to In Cab Employees because Actual_Emp is 1 on ~97% of trips in the sample export (changeable in Settings).
+- Employee location rule (v11): PICKUP trip = Pickup_Address, DROP trip = Customer_Address. Order_ID matched it on ~99% (PICKUP) and ~91% (DROP) of the sample file.
+- Tests: `npx tsx scripts/test-activity.ts [real.csv]`.

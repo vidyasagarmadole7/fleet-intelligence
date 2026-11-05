@@ -3,20 +3,22 @@ import Chart from '../components/Chart';import KpiModal from '../components/KpiM
 import {Card,Col,DataTable,Empty,Header,Notice,Tile,TripsDrawer,D,f,hbar,mkKpi,pct,stackedH} from '../components/Kit';
 import {useFilters} from '../components/Filters';
 import {Config,Dataset,Kpi,Master} from '../engine/types';
-import {G,distinct,groupBy,monthOf} from '../engine/groups';
+import {G,distinct,groupBy,monthOf} from '../engine/groups';import {employeeLocation,locationEvidence} from '../engine/teamupload';
 
-type LocField='orderId'|'pickupAddr'|'dropAddr';
-const LOC:{k:LocField;label:string;src:string}[]=[{k:'orderId',label:'Order ID',src:'Order_ID'},{k:'pickupAddr',label:'Pickup Address',src:'Pickup_Address'},{k:'dropAddr',label:'Customer Address',src:'Customer_Address'}];
+type LocField='empLoc'|'orderId'|'pickupAddr'|'dropAddr';
+const LOC:{k:LocField;label:string;src:string}[]=[{k:'empLoc',label:'Employee location (PICKUP: Pickup, DROP: Customer address)',src:'Pickup_Address / Customer_Address by PICKUPDROP'},{k:'orderId',label:'Order ID',src:'Order_ID'},{k:'pickupAddr',label:'Pickup Address',src:'Pickup_Address'},{k:'dropAddr',label:'Customer Address',src:'Customer_Address'}];
 const NO_CO='(Company missing)';
 const top=(g:G[],v:(g:G)=>number,n=10):D=>[...g].sort((a,b)=>v(b)-v(a)).slice(0,n).map(x=>[x.key,v(x)]);
 
 export default function Company({ds,cfg}:{ds:Dataset;cfg:Config}){
- const [loc,setLoc]=useState<LocField>('orderId');
+ const [loc,setLoc]=useState<LocField>('empLoc');
  const L=LOC.find(l=>l.k===loc)!;
  const {ms,bar}=useFilters(ds,<label className="text-sm flex items-center gap-1">Location field<select className="border rounded p-1.5 bg-white" value={loc} onChange={e=>setLoc(e.target.value as LocField)}>{LOC.map(l=><option key={l.k} value={l.k}>{l.label}</option>)}</select></label>);
  const [open,setOpen]=useState<Kpi|null>(null);const [drill,setDrill]=useState<{t:string;sub:string;ms:Master[]}|null>(null);
  const {groups}=useMemo(()=>groupBy(ms,m=>m.company??NO_CO,cfg.employeeField),[ms,cfg.employeeField]);
- const locOf=(m:Master)=>m[loc];
+ const locOf=(m:Master):string|undefined=>loc==='empLoc'?employeeLocation(m):m[loc];
+ const ev=useMemo(()=>locationEvidence(ds.masters),[ds]);
+ const evTxt=(x:{n:number;hit:number})=>x.n?`${(x.hit/x.n*100).toFixed(0)}%`:'n/a';
  const locGroups=useMemo(()=>groupBy(ms.filter(m=>locOf(m)!==undefined),m=>(m.company??NO_CO)+'\u0001'+locOf(m),cfg.employeeField).groups,[ms,loc,cfg.employeeField]);
  const noLoc=ms.filter(m=>locOf(m)===undefined);
  const empLabel=cfg.employeeField==='actual'?'Actual_Emp':cfg.employeeField==='inCab'?'In Cab Employees':'Planned_Emp';
@@ -62,7 +64,7 @@ export default function Company({ds,cfg}:{ds:Dataset;cfg:Config}){
  return <div className="space-y-5">
   <Header title="Company / Location Performance" ds={ds} shown={ms.length} total={ds.masters.length}/>
   {bar}
-  <Notice>Requires PTrack Confirmation: Team_Name is used as Company Name, and the "location" is chosen from Order_ID, Pickup_Address or Customer_Address (default Order_ID). Which of these is the true employee location - and which address is the pickup point for a Drop trip - is not assumed. Values are shown exactly as exported.</Notice>
+  <Notice>Requires PTrack Confirmation: Team_Name is used as Company Name. Default location = employee location (PICKUP trip: Pickup_Address, DROP trip: Customer_Address), the rule used in the v11 audit dashboard. Check on this file: Order_ID equals that location on {evTxt(ev.pickup)} of PICKUP and {evTxt(ev.drop)} of DROP trips. Other fields can be chosen above. Values are shown exactly as exported.</Notice>
   <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">{kpis.map(k=><Tile key={k.id} k={k} onOpen={setOpen}/>)}</div>
   {ms.length===0?<Empty text="No trips match the filters."/>:<>
   <div className="grid lg:grid-cols-2 gap-4">

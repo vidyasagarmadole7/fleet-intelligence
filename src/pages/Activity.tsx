@@ -1,4 +1,5 @@
 import {useMemo,useState} from 'react';import Chart from '../components/Chart';import {download} from '../components/KpiModal';
+import TeamUpload from './TeamUpload';import LocationPerformance from './LocationPerformance';
 import {Dataset,Master} from '../engine/types';import {Act,EMP_TYPES,parseActivities} from '../engine/activity';
 const f=(n:number|undefined,d=0)=>n===undefined?'-':n.toLocaleString('en-IN',{maximumFractionDigits:d});
 const fmt=(ms?:number)=>ms===undefined?['-','-']:new Date(ms).toISOString().slice(0,16).split('T');
@@ -60,7 +61,7 @@ function Vendors({ds}:{ds:Dataset}){
     <td className="p-2 max-w-72 truncate" title={[...v.cos].map(([c,n])=>`${c} (${n})`).join('; ')}>{v.cos.size} {v.cos.size===1?'company':'companies'}: {[...v.cos].sort((a,b)=>b[1]-a[1]).slice(0,2).map(([c,n])=>`${c} (${n})`).join(', ')}</td><td className="p-2">{status(v)}</td></tr>)}</tbody></table></div>
   <Pager page={page} set={setPage} n={list.length}/></div>}
 export default function Activity({ds}:{ds:Dataset}){
- const [tab,setTab]=useState<'e'|'v'>('e');
+ const [tab,setTab]=useState<'e'|'t'|'l'|'v'>('e');
  return <div className="space-y-5"><div><h1 className="text-2xl font-semibold">Employee Activity & Vendor Audit</h1><div className="text-xs text-slate-500">Source: {ds.fileName} | activity rows come from Task History, vendor figures from the Task Master (one record per unique Task ID)</div></div>
-  <div className="flex gap-2">{([['e','A. Employee Activity Audit'],['v','B. Vendor Analytics']] as const).map(([k,l])=><button key={k} onClick={()=>setTab(k)} className={`px-4 py-2 rounded-lg text-sm border ${tab===k?'bg-blue-600 text-white border-blue-600':'bg-white'}`}>{l}</button>)}</div>
-  {tab==='e'?<Employees ds={ds}/>:<Vendors ds={ds}/>}</div>}
+  <div className="flex gap-2">{([['e','A. Employee Activity Audit'],['t','B. Team Upload'],['l','C. Location Performance'],['v','D. Vendor Analytics']] as const).map(([k,l])=><button key={k} onClick={()=>setTab(k)} className={`px-4 py-2 rounded-lg text-sm border ${tab===k?'bg-blue-600 text-white border-blue-600':'bg-white'}`}>{l}</button>)}</div>
+  {tab==='e'?<Employees ds={ds}/>:tab==='t'?<TeamUpload ds={ds}/>:tab==='l'?<LocationPerformance ds={ds}/>:<Vendors ds={ds}/>}</div>}
