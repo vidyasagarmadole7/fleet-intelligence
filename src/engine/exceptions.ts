@@ -8,6 +8,15 @@ export const REVIEW_STATUSES=['Pending','Reviewed','Accepted','Rejected'] as con
 export type Review={st:typeof REVIEW_STATUSES[number];as:string;nt:string;at:string};
 const slug=(s:string)=>s.replace(/\W+/g,'');
 
+/** Per-task facts from History_Description (exact duplicate rows ignored). */
+export function historyFacts(hist:Dataset['history']){
+ const started=new Set<string>(),succMs=new Map<string,number>(),succ=new Set<string>(),mods=new Map<string,number[]>();const seen=new Set<string>();
+ for(const h of hist){const d=(h.desc??'').trim();const fp=`${h.taskId}|${d}|${h.ms??''}`;if(seen.has(fp))continue;seen.add(fp);
+  if(/^started\b/i.test(d))started.add(h.taskId);
+  if(/^successful\b/i.test(d)){succ.add(h.taskId);if(h.ms!==undefined){const c=succMs.get(h.taskId);if(c===undefined||h.ms<c)succMs.set(h.taskId,h.ms)}}
+  if(/^modified\b/i.test(d)&&h.ms!==undefined){const a=mods.get(h.taskId)||[];a.push(h.ms);mods.set(h.taskId,a)}}
+ return{started,succ,succMs,mods}}
+
 /**
  * Automated, rule-based findings ported from the v11 audit dashboard plus the odometer / occupancy engines.
  * Exception ID = Task ID + category, so re-importing the same file never creates duplicates.
@@ -17,12 +26,7 @@ export function findExceptions(ds:Dataset,odo:OdoThresholds):Exc[]{
  const out=new Map<string,Exc>();
  const add=(m:Master,cat:string,sev:Sev,desc:string,source:string,related:string[]=[])=>{const id=`${m.taskId}-${slug(cat)}`;if(!out.has(id))out.set(id,{id,m,cat,sev,desc,source,related})};
  const byId=new Map(ds.masters.map(m=>[m.taskId,m]));
- // history facts per task (exact duplicate rows ignored)
- const started=new Set<string>(),succMs=new Map<string,number>(),succ=new Set<string>(),mods=new Map<string,number[]>();const seen=new Set<string>();
- for(const h of ds.history){const d=(h.desc??'').trim();const fp=`${h.taskId}|${d}|${h.ms??''}`;if(seen.has(fp))continue;seen.add(fp);
-  if(/^started\b/i.test(d))started.add(h.taskId);
-  if(/^successful\b/i.test(d)){succ.add(h.taskId);if(h.ms!==undefined){const c=succMs.get(h.taskId);if(c===undefined||h.ms<c)succMs.set(h.taskId,h.ms)}}
-  if(/^modified\b/i.test(d)&&h.ms!==undefined){const a=mods.get(h.taskId)||[];a.push(h.ms);mods.set(h.taskId,a)}}
+ const {started,succ,succMs,mods}=historyFacts(ds.history);
  // image / reading reuse across tasks
  const img=new Map<string,string[]>(),srd=new Map<string,string[]>();
  for(const m of ds.masters){for(const u of new Set([m.startImg,m.endImg].filter(Boolean) as string[])){const a=img.get(u)||[];a.push(m.taskId);img.set(u,a)}

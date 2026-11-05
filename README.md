@@ -23,3 +23,8 @@ Order_ID / address as 'location' (selectable); Agent_Username as driver; odomete
 - Defaults aligned to v11: odometer vs PTrack tolerance 5 km, plausible trip 300 km. Employees travelled defaults to In Cab Employees because Actual_Emp is 1 on ~97% of trips in the sample export (changeable in Settings).
 - Employee location rule (v11): PICKUP trip = Pickup_Address, DROP trip = Customer_Address. Order_ID matched it on ~99% (PICKUP) and ~91% (DROP) of the sample file.
 - Tests: `npx tsx scripts/test-activity.ts [real.csv]`.
+
+## Audit Plus (from v11): Risk Score, KM Compare & Billing, Status Audit
+- `/audit-plus` (`pages/AuditPlus.tsx`, `engine/risk.ts`). Risk score weights/tolerances are the v11 defaults and are editable on screen; scores are review priorities, not proof.
+- KM Compare uses PTrack distance vs odometer distance only. v11's Google/OSM map-KM comparison needs an API key + network and is not included.
+- Not built (need several dates in the data): Repeat Offenders, vehicle-day KM spikes. Data is kept in browser memory per import; persistent multi-day storage (IndexedDB, append + de-duplicate like v11) is the next step to unlock them.

@@ -35,7 +35,16 @@ assert.equal(E.ignored.get('Accepted → Started'),1,'untracked transition repor
 const X=findExceptions(ds,DEFAULT_ODO);const has=(id:string,c:string)=>X.some(e=>e.m.taskId===id&&e.cat===c);
 assert.ok(has('1','Odometer image reused across trips'),'image shared by tasks 1 and 2');assert.ok(has('3','Missing start odometer image'));assert.ok(has('3','Missing start event'));
 assert.equal(new Set(X.map(e=>e.id)).size,X.length,'exception IDs are unique');
-console.log('team upload / location performance / exceptions checks: OK');
+// audit plus: risk, km compare, status classification
+import {DEFAULT_RISK,ruleFlags,riskGroups,kmSuspicion,statusClass,level} from '../src/engine/risk';import {historyFacts} from '../src/engine/exceptions';
+const fl=ruleFlags(ds,DEFAULT_RISK);
+assert.ok(fl.get('1')!.has('ri'),'image shared with task 2');assert.ok(fl.get('3')!.has('mp')&&fl.get('3')!.has('mo'));assert.ok(!fl.has('2'),'non-completed tasks are not rule-checked');
+const rg=riskGroups(ds.masters,fl,m=>m.driver,{...DEFAULT_RISK,min:1});assert.equal(rg.length,1);assert.equal(rg[0].n,2);assert.ok((rg[0].score??-1)>0);
+assert.equal(riskGroups(ds.masters,fl,m=>m.driver,{...DEFAULT_RISK,min:5})[0].score,undefined,'too few completed trips = low data, not a score');assert.equal(level(undefined),'Low data');
+const mm=(o:number,p:number)=>({...by.get('1')!,status:'Completed',odoKm:o,distanceKm:p});
+assert.deepEqual(kmSuspicion(mm(10,30),DEFAULT_RISK),['PTrack KM above odometer KM (possible over-billing)']);assert.deepEqual(kmSuspicion(mm(50,10),DEFAULT_RISK),['Odometer KM above PTrack KM']);assert.deepEqual(kmSuspicion(mm(10,12),DEFAULT_RISK),[],'within tolerance');
+const HF=historyFacts(ds.history);assert.equal(statusClass(by.get('3')!,HF),'Missing start event');assert.equal(statusClass(by.get('2')!,HF),'Not completed');
+console.log('team upload / location performance / exceptions / audit plus checks: OK');
 if(process.argv[2]){const r=run(fs.readFileSync(process.argv[2],'utf8'));const A=parseActivities(r.history);const T=teamUpload(r.masters,creators(A.acts));
  assert.equal(T.members.reduce((s,m)=>s+m.total.length,0)+T.noCreator.length,r.masters.length,'team upload reconciles to unique tasks');
  const L=locPerf(lpEvents(r.history,new Map(r.masters.map(m=>[m.taskId,m]))).events,r.masters,'named');
